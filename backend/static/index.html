@@ -5,24 +5,128 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Al Dente - Company Brain</title>
   <style>
-    body { margin:0; background:#14120B; color:#ece8dd; display:grid; min-height:100vh;
-      place-items:center; font:16px/1.6 ui-sans-serif, system-ui, sans-serif; }
-    main { max-width:560px; padding:24px; }
-    h1 { font-size:22px; margin:0 0 4px; }
-    .tag { font:11px/1 ui-monospace, monospace; letter-spacing:.18em; text-transform:uppercase; color:#F54E00; }
-    p { color:#9b9684; }
-    code { color:#ece8dd; background:#1c1a12; border:1px solid #2e2b20; border-radius:5px; padding:2px 6px; }
+    :root { color-scheme: dark; --bg:#14120b; --panel:#1c1a12; --line:#373122; --ink:#ece8dd; --muted:#a29b88; --hot:#f54e00; --ok:#44d17a; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:radial-gradient(circle at 20% 0%, #2a1a0d 0, var(--bg) 38%); color:var(--ink); font:15px/1.55 ui-sans-serif, system-ui, sans-serif; }
+    main { width:min(1180px, calc(100% - 32px)); margin:0 auto; padding:32px 0; }
+    header { display:flex; justify-content:space-between; gap:24px; align-items:flex-end; margin-bottom:22px; }
+    h1 { font-size:36px; line-height:1; margin:6px 0; letter-spacing:-.04em; }
+    h2 { margin:0 0 10px; font-size:18px; }
+    p { color:var(--muted); margin:0; }
+    .tag { font:11px/1 ui-monospace, monospace; letter-spacing:.18em; text-transform:uppercase; color:var(--hot); }
+    .grid { display:grid; grid-template-columns: minmax(0, 1fr) minmax(360px, .95fr); gap:16px; }
+    .card { background:rgba(28,26,18,.86); border:1px solid var(--line); border-radius:18px; padding:18px; box-shadow:0 16px 40px rgba(0,0,0,.24); }
+    textarea { width:100%; min-height:120px; resize:vertical; border:1px solid var(--line); border-radius:14px; padding:14px; background:#100f0a; color:var(--ink); font:inherit; outline:none; }
+    textarea:focus { border-color:var(--hot); }
+    button { margin-top:12px; border:0; border-radius:999px; background:var(--hot); color:white; padding:11px 18px; font-weight:700; cursor:pointer; }
+    button:disabled { opacity:.6; cursor:wait; }
+    .answer { min-height:180px; white-space:pre-wrap; overflow:auto; }
+    .meta { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+    .pill { border:1px solid var(--line); background:#100f0a; color:var(--muted); border-radius:999px; padding:5px 9px; font-size:12px; }
+    a { color:var(--ok); }
+    svg { width:100%; height:430px; display:block; background:#100f0a; border:1px solid var(--line); border-radius:16px; }
+    .examples { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    .example { background:#100f0a; color:var(--muted); border:1px solid var(--line); padding:7px 10px; border-radius:999px; cursor:pointer; font-size:12px; }
+    @media (max-width: 860px) { .grid { grid-template-columns:1fr; } header { display:block; } }
   </style>
 </head>
 <body>
   <main>
-    <span class="tag">placeholder</span>
-    <h1>Al Dente - Company Brain</h1>
-    <p>Nothing here yet - building a minimal UI is part of the challenge. It must exist and
-    work (a way to send a question to <code>POST /ask</code> and read the answer), but looks
-    are <strong>not graded</strong>: keep it simple and spend your time on the agent.</p>
-    <p>Replace this file (<code>backend/static/index.html</code>) or serve your own frontend.
-    See <code>BRIEF.md</code> and <code>AGENTS.md</code>.</p>
+    <header>
+      <div>
+        <span class="tag">Al Dente Company Brain</span>
+        <h1>Ask the company brain</h1>
+        <p>One endpoint, four sources: CRM, ERP, calls, and the knowledge base.</p>
+      </div>
+      <span class="pill">POST /ask</span>
+    </header>
+
+    <section class="grid">
+      <div class="card">
+        <h2>Question</h2>
+        <textarea id="question" placeholder="Ask about customers, opportunities, lots, inventory, calls, policies, prices, or product specs."></textarea>
+        <button id="ask">Ask</button>
+        <div class="examples">
+          <span class="example">Is SKU PAS-PEN-500 below its minimum stock?</span>
+          <span class="example">What is the shelf life and allergens for PAS-SPA-500?</span>
+          <span class="example">Total value of opportunities in negotiation grouped by channel</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Answer</h2>
+        <div id="answer" class="answer">Ready.</div>
+        <div id="meta" class="meta"></div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:16px">
+      <span class="tag">Knowledge graph</span>
+      <h2>How the company facts connect</h2>
+      <svg id="graph" viewBox="0 0 900 430" role="img" aria-label="Company knowledge graph"></svg>
+    </section>
   </main>
+  <script>
+    const question = document.querySelector("#question");
+    const ask = document.querySelector("#ask");
+    const answer = document.querySelector("#answer");
+    const meta = document.querySelector("#meta");
+
+    document.querySelectorAll(".example").forEach((item) => {
+      item.addEventListener("click", () => { question.value = item.textContent; question.focus(); });
+    });
+
+    ask.addEventListener("click", async () => {
+      const value = question.value.trim();
+      if (!value) return;
+      ask.disabled = true;
+      answer.textContent = "Thinking...";
+      meta.innerHTML = "";
+      try {
+        const response = await fetch("/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: value })
+        });
+        const data = await response.json();
+        answer.innerHTML = data.answer && data.answer.trim().startsWith("<!doctype html")
+          ? data.answer
+          : escapeHtml(data.answer || "No answer returned.");
+        const pills = [`verticale: ${data.verticale || "unknown"}`, ...((data.sources || []).map((s) => `source: ${s}`))];
+        if (data.artifact_url) pills.push(`<a href="${data.artifact_url}" target="_blank" rel="noreferrer">artifact</a>`);
+        meta.innerHTML = pills.map((p) => `<span class="pill">${p}</span>`).join("");
+      } catch (error) {
+        answer.textContent = `Request failed: ${error.message}`;
+      } finally {
+        ask.disabled = false;
+      }
+    });
+
+    function escapeHtml(text) {
+      return String(text).replace(/[&<>"']/g, (c) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", "\"":"&quot;", "'":"&#039;" }[c]));
+    }
+
+    async function drawGraph() {
+      const svg = document.querySelector("#graph");
+      const data = await fetch("/graph").then((r) => r.json()).catch(() => ({ nodes: [], links: [] }));
+      const positions = {
+        customers:[120,90], crm:[330,70], calls:[330,170], lots:[540,150], erp:[740,150],
+        products:[120,320], raw:[330,320], suppliers:[540,320], kb:[740,320], policies:[540,250]
+      };
+      svg.innerHTML = "";
+      for (const link of data.links || []) {
+        const a = positions[link.source], b = positions[link.target];
+        if (!a || !b) continue;
+        svg.insertAdjacentHTML("beforeend", `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#3a3324" stroke-width="2"/>`);
+      }
+      for (const node of data.nodes || []) {
+        const p = positions[node.id];
+        if (!p) continue;
+        const fill = node.type === "source" ? "#f54e00" : "#252116";
+        svg.insertAdjacentHTML("beforeend", `<g><circle cx="${p[0]}" cy="${p[1]}" r="34" fill="${fill}" stroke="#5a4b32" stroke-width="2"/><text x="${p[0]}" y="${p[1] + 52}" fill="#ece8dd" font-size="13" text-anchor="middle">${escapeHtml(node.label)}</text></g>`);
+      }
+    }
+    drawGraph();
+  </script>
 </body>
 </html>

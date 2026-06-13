@@ -1,0 +1,98 @@
+01
+CRM
+aggregate
+How many open opportunities does Primato Supermercati S.p.A. (CUST-0132) have, and what is their total value?
+
+Reference answer
+4 open opportunities (stages qualification and negotiation; won/lost excluded), for a total of 740,000 EUR: Annual supply renewal (81,000), New format introduction - Rigatoni n.24 Bio (294,000), Annual supply renewal (194,000), Export pilot - Conchiglie n.51 (171,000).
+
+02
+ERP
+single source
+Is SKU PAS-PEN-500 (Penne Rigate n.73 - 500g) below its minimum stock? Give the on-hand quantity.
+
+Reference answer
+Yes, it is below minimum. On-hand is 462 cartons against a minimum stock of 2,000 cartons, so the item is flagged below_min.
+
+03
+Call logs
+single source
+In the last call with NordSpesa S.p.A. (CUST-0137), what was the complaint and which lot did it concern?
+
+Reference answer
+A quality complaint for broken pasta, on lot LOT-2026-0658 (Fettuccine n.205 - 500g box, SKU PAS-FET-500). Recorded in call CALL-58020 on 2026-06-06.
+
+04
+Knowledge base
+single source
+What is the shelf life (TMC) and the declared allergens for Spaghetti n.5 - 500g (SKU PAS-SPA-500)?
+
+Reference answer
+Shelf life: 36 months from production. Allergens: gluten. May contain traces of soy and mustard. (From the product spec sheet in the knowledge base.)
+
+05
+Call logs
+multi source
+Does the complaint from that last NordSpesa call qualify for a return under the quality policy?
+
+Reference answer
+Yes. Broken pasta is a covered defect; the complaint was raised within the 15-day window and includes the lot number and a photo of the non-conformity, so it qualifies. Outcome per policy: replacement or a credit note on the lot value, with the lot put on quality block. (Crosses the call log with the returns policy in the KB.)
+
+06
+CRM
+aggregate
+Total value of opportunities in the negotiation stage, grouped by customer channel (GDO / distributor / horeca).
+
+Reference answer
+GDO: 3,301,000 EUR (22 opportunities). Distributor: 1,931,000 EUR (12). Horeca: 3,040,000 EUR (18). Counts only opportunities currently in the negotiation stage.
+
+07
+ERP
+trap
+What is the profit margin on lot LOT-2026-0658?
+
+Reference answer
+Not available. Cost and profit margin are not stored on lots (or anywhere in the sources). The correct response is to say the figure isn't available, not to invent one - a fabricated number is scored wrong.
+
+08
+CRM
+trap
+What is the status of the order for Supermercati Bianchi?
+
+Reference answer
+There is no customer named 'Supermercati Bianchi' in the CRM. The correct response is to surface that the customer doesn't exist rather than fabricate an order status.
+
+09
+CRM
+generation
+Generate a 4-slide HTML deck for the sales rep visiting Primato Supermercati S.p.A.: profile, open deals, order/lot status, recent call complaints.
+
+Reference answer
+An HTML deck of ~4 slides: (1) profile - Primato Supermercati S.p.A., GDO channel, Verona; (2) open deals - the 4 opportunities above, total 740,000 EUR; (3) order and production-lot status pulled from the ERP; (4) recent complaints from the call logs. Facts are judged automatically; the presentation/quality of the artifact is rated by the human jury at Level 2.
+
+10
+ERP
+multi source
+Which semolina does SKU PAS-SPA-500 use (per its bill of materials), which supplier provides it, and is that raw material below minimum stock?
+
+Reference answer
+RAW-SEM-003 (Durum semolina - premium), supplied by Molino San Giorgio; it is not below minimum stock. (Chain: SKU -> bill of materials -> raw material -> inventory + supplier.)
+
+11
+Call logs
+aggregate
+Across ALL recorded calls (there are 80 - you must page through the entire call log, do not stop at the first page), count how many quality complaints concern the defect 'broken pasta'. Give the exact number.
+
+Reference answer
+9 calls report a 'broken pasta' defect. The full call log spans multiple pages: page only the first page and the count comes out wrong. You have to page through all 80 calls.
+
+12
+Knowledge base
+multi source
+GranMercato S.p.A. (also written 'Gran Mercato S.p.A.' in some notes) asked about the price of Fusilli n.98 - 500g box (PAS-FUS-500). A call mentions one figure and the official 2026 wholesale price list mentions another. Which is the correct list price, and why?
+
+Reference answer
+8.07 EUR per carton. The official 2026 wholesale price list (DOC-015) is authoritative; the 8.50 EUR figure mentioned in the call is incorrect. When a phone call and an official document disagree, the official document wins.
+
+Honesty pays
+For trap questions, the correct response is to surface the false premise ("no such customer") or say the figure isn't available in any source. Inventing a plausible-sounding fact is scored wrong; an honest "not available" is safe. Same rule for anything you can't ground in the API or the bundled documents.
